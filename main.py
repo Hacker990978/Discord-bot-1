@@ -7,7 +7,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-GUILD_ID = 1406918069963460728  # replace with your server ID
+GUILD_ID = 1406918069963460728  # Replace with your server ID
 
 @bot.event
 async def on_ready():
@@ -23,7 +23,8 @@ initial_cogs = ["fun", "tools", "games", "admin"]
 
 for cog in initial_cogs:
     try:
-        bot.load_extension(f"cogs.{cog}")
+        # Adding await for loading extensions asynchronously
+        await bot.load_extension(f"cogs.{cog}")
         print(f"✅ Loaded cog: {cog}")
     except Exception as e:
         print(f"❌ Failed to load cog {cog}: {e}")
