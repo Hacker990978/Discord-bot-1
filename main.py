@@ -7,7 +7,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
-GUILD_ID = 1406918069963460728 # Replace with your server ID
+GUILD_ID = 1406918069963460728  # Replace with your server ID
 
 @bot.event
 async def on_ready():
@@ -19,15 +19,24 @@ async def on_ready():
         print(f"❌ Sync failed: {e}")
 
 # --- Load Cogs ---
-initial_cogs = ["fun", "tools", "games", "admin"]
+async def load_cogs():
+    initial_cogs = ["fun", "tools", "games", "admin"]  # Add more cogs here if needed
+    for cog in initial_cogs:
+        try:
+            await bot.load_extension(f"cogs.{cog}")
+            print(f"✅ Loaded cog: {cog}")
+        except Exception as e:
+            print(f"❌ Failed to load cog {cog}: {e}")
 
-for cog in initial_cogs:
+@bot.event
+async def on_ready():
+    await load_cogs()
+    print(f"✅ Logged in as {bot.user}")
     try:
-        # Adding await for loading extensions asynchronously
-        await bot.load_extension(f"cogs.{cog}")
-        print(f"✅ Loaded cog: {cog}")
+        synced = await bot.tree.sync(guild=discord.Object(id=GUILD_ID))
+        print(f"✅ Synced {len(synced)} commands")
     except Exception as e:
-        print(f"❌ Failed to load cog {cog}: {e}")
+        print(f"❌ Sync failed: {e}")
 
 # --- Run Bot ---
 TOKEN = os.getenv("DISCORD_BOT_TOKEN")
