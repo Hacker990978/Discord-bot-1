@@ -13,11 +13,11 @@ GUILD_ID = 1406918069963460728  # Replace with your server ID
 async def on_ready():
     print(f"✅ Logged in as {bot.user}")
     
-    # Loading the cogs
+    # Load cogs after the bot is ready
     await load_cogs()
 
     try:
-        # Syncing commands after all cogs are loaded
+        # Syncing commands after cogs are loaded
         synced = await bot.tree.sync(guild=discord.Object(id=GUILD_ID))
         print(f"✅ Synced {len(synced)} commands")
     except Exception as e:
