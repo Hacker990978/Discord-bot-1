@@ -1,44 +1,32 @@
 import discord
 from discord.ext import commands
-import os
+from discord import app_commands
 
-# --- Setup Bot ---
-intents = discord.Intents.default()
-intents.message_content = True
-bot = commands.Bot(command_prefix="!", intents=intents)
+class Profile(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
 
-GUILD_ID = 1406918069963460728  # Replace with your server ID
+    # 🎭 Change Activity
+    @app_commands.command(name="setactivity", description="Change the bot's activity")
+    async def setactivity(self, interaction: discord.Interaction, activity: str):
+        await self.bot.change_presence(activity=discord.Game(name=activity))
+        await interaction.response.send_message(f"✅ Activity set to: {activity}", ephemeral=True)
 
-@bot.event
-async def on_ready():
-    print(f"✅ Logged in as {bot.user}")
-    
-    # Load cogs after the bot is ready
-    await load_cogs()
+    # 👤 Change Nickname
+    @app_commands.command(name="setnick", description="Change the bot's nickname in this server")
+    async def setnick(self, interaction: discord.Interaction, nickname: str):
+        await interaction.guild.me.edit(nick=nickname)
+        await interaction.response.send_message(f"✅ Nickname changed to: {nickname}", ephemeral=True)
 
-    try:
-        # Syncing commands after cogs are loaded
-        synced = await bot.tree.sync(guild=discord.Object(id=GUILD_ID))
-        print(f"✅ Synced {len(synced)} commands")
-    except Exception as e:
-        print(f"❌ Sync failed: {e}")
+    # 🖼️ Change Avatar
+    @app_commands.command(name="setavatar", description="Change the bot's avatar (paste an image URL)")
+    async def setavatar(self, interaction: discord.Interaction, url: str):
+        async with self.bot.http._HTTPClient__session.get(url) as resp:
+            if resp.status != 200:
+                return await interaction.response.send_message("❌ Failed to fetch image.", ephemeral=True)
+            data = await resp.read()
+            await self.bot.user.edit(avatar=data)
+            await interaction.response.send_message("✅ Avatar updated!", ephemeral=True)
 
-# --- Load Cogs Asynchronously ---
-async def load_cogs():
-    # List your cogs here
-    initial_cogs = ["fun", "tools", "games", "admin"]  # Add more cogs as required
-    
-    for cog in initial_cogs:
-        try:
-            # Asynchronously load cogs
-            await bot.load_extension(f"cogs.{cog}")
-            print(f"✅ Loaded cog: {cog}")
-        except Exception as e:
-            print(f"❌ Failed to load cog {cog}: {e}")
-
-# --- Run Bot ---
-TOKEN = os.getenv("DISCORD_BOT_TOKEN")
-if not TOKEN:
-    raise RuntimeError("❌ Bot token not found! Set it in Railway Variables.")
-
-bot.run(TOKEN.strip())
+async def setup(bot):
+    await bot.add_cog(Profile(bot))
